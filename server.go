@@ -31,26 +31,7 @@ func main() {
 	}))
 
 	routes.AuthRoutes(app)
-	// app.Post("/signup", func(c *fiber.Ctx) error {
-
-	// 	req := new(SignupRequest)
-	// 	if err := c.BodyParser(req); err != nil {
-	// 		return err
-	// 	}
-
-	// 	if req.name == "" || req.username == "" {
-	// 		return fiber.NewError(fiber.StatusBadRequest, "Invalied Signup Credentials")
-	// 	}
-
-	// 	return nil
-
-	// })
-
-	// app.Post("/login", func(c *fiber.Ctx) error {
-	// 	return nil
-
-	// })
-
+	routes.GameRoutes(app)
 	// app.Get("/private", func(c *fiber.Ctx) error {
 	// 	return c.JSON(fiber.Map{"success": true, "path": "private"})
 
@@ -63,7 +44,7 @@ func main() {
 
 	app.Get("/", func(c *fiber.Ctx) error {
 
-		return c.JSON(fiber.Map{"message": "hello api"})
+		return c.JSON(fiber.Map{"message": "hello kitten"})
 	})
 
 	if err := app.Listen(":5000"); err != nil {

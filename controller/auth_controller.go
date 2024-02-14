@@ -1,14 +1,18 @@
 package controller
 
 import (
-	"time"
 	"encoding/json"
 	"fmt"
+	"os"
+	"time"
+
 	"github.com/Raviikumar001/exploding-kittens-server/db"
 	"github.com/Raviikumar001/exploding-kittens-server/models"
 
 	"context"
+
 	"github.com/gofiber/fiber/v2"
+
 	// jwtware "github.com/gofiber/contrib/jwt"
 	"github.com/golang-jwt/jwt/v5"
 
@@ -165,7 +169,8 @@ func UserSignIn(c *fiber.Ctx) error {
 
 
 func createJWTToken(user models.User) (string, int64, error) {
-    // Calculate expiration 24 hours from now
+
+	secret := os.Getenv("JWT_SECRET")
     exp := time.Now().Add(time.Hour * 24).Unix()
 
     token := jwt.New(jwt.SigningMethodHS256)
@@ -173,7 +178,7 @@ func createJWTToken(user models.User) (string, int64, error) {
     claims["user_id"] = user.ID
     claims["exp"] = exp
 
-    t, err := token.SignedString([]byte("secret"))
+    t, err := token.SignedString([]byte(secret))
     if err != nil {
         return "", 0, err
     }
