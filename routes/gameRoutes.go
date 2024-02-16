@@ -11,7 +11,7 @@ func GameRoutes(a *fiber.App) {
 	route := a.Group("/api/v1")
 
 	//Game routes
-	route.Patch("/update-game-result",middleware.JWTMiddleware(),  controller.UptdateGameResults)
+	route.Patch("/update-game-result",middleware.JWTMiddleware(),  controller.UpdateGameResults)
 	route.Get("/get-result", middleware.JWTMiddleware(), controller.GetGameResult)
 
 }

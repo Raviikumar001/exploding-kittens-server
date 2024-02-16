@@ -2,19 +2,21 @@ package middleware
 
 import (
 	"errors"
+	"fmt"
 	"os"
 	"strings"
 	"time"
-  
+
 	"github.com/gofiber/fiber/v2"
 	"github.com/golang-jwt/jwt/v5"
-  )
+)
   
   func JWTMiddleware() fiber.Handler {
 	  secret := os.Getenv("JWT_SECRET")
   
 	  return func(c *fiber.Ctx) error {
 		  authHeader := c.Get("Authorization")
+		  fmt.Println(authHeader)
 		  if !strings.Contains(authHeader, "Bearer") {
 			  return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
 				  "error": true,
