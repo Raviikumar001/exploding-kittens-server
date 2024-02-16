@@ -2,21 +2,20 @@ package main
 
 import (
 	"fmt"
+	"os"
 	// "os"
 	"github.com/Raviikumar001/exploding-kittens-server/db"
 	"github.com/Raviikumar001/exploding-kittens-server/routes"
-
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/cors"
 	"github.com/joho/godotenv"
 )
 
-
 func main() {
 
 	app := fiber.New()
-	err := godotenv.Load()
+	err := godotenv.Load("app.env")
 
 	if err != nil {
 		fmt.Println("Error loading .env files")
@@ -41,13 +40,13 @@ func main() {
 	// 	return c.JSON(fiber.Map{"success": true, "path": "public"})
 
 	// })
-
+	port := os.Getenv("PORT")
 	app.Get("/", func(c *fiber.Ctx) error {
 
 		return c.JSON(fiber.Map{"message": "hello kitten"})
 	})
 
-	if err := app.Listen(":5000"); err != nil {
+	if err := app.Listen("0.0.0.0:" + port); err != nil {
 		panic(err)
 	}
 
