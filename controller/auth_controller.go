@@ -123,7 +123,7 @@ func UserSignIn(c *fiber.Ctx) error {
             "msg":   "Username does not Exist", 
         })
     } else if err != nil {
-r
+
         return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
             "error": true,
             "msg":   "Redis error",
