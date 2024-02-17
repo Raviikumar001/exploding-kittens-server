@@ -24,10 +24,10 @@ import (
 			  })
 		  }
   
-		  // Extract token 
+
 		  tokenString := strings.Replace(authHeader, "Bearer ", "", -1)
   
-		  // Parse and validate
+
 		  token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
 			if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
 				return nil, errors.New("unexpected signing method") // Lowercase
@@ -50,7 +50,7 @@ import (
 			  })
 		  }
   
-		  // Check for expiration 
+		
 		  exp := int64(claims["exp"].(float64))
 		  if exp < time.Now().Unix() {
 			  return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
@@ -59,8 +59,7 @@ import (
 			  })
 		  }
   
-		  // If we reach here, token is valid. You might want to extract the user_id
-		  // and make it available in context:
+		 
 		  userID := claims["user_id"].(string)
 		  c.Locals("userID", userID) 
   

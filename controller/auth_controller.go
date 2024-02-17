@@ -27,7 +27,7 @@ func UserSignUp(c *fiber.Ctx) error {
 
 	if err := c.BodyParser(&siginUp); err != nil {
 
-		// Return status 400 and error message.
+	
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
 			"error": true,
 			"msg":   err.Error(),
@@ -35,7 +35,7 @@ func UserSignUp(c *fiber.Ctx) error {
 	}
 	fmt.Println(siginUp.Name)
 
-	// Create a new user struct.
+	
 	user := &models.User{}
 
 	user.ID = uuid.New()
@@ -54,9 +54,9 @@ func UserSignUp(c *fiber.Ctx) error {
 		})
 	}
 
-	// fmt.Println(string(jsonUser))
 
-	// Check for existing username in Redis
+
+
 	usernameExists, err := redisClient.Exists(context.Background(), fmt.Sprintf("username:%s", siginUp.Username)).Result()
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
@@ -64,7 +64,7 @@ func UserSignUp(c *fiber.Ctx) error {
 			"msg":   "Redis error",
 		})
 	}
-	if usernameExists == 1 { // Username exists in Redis
+	if usernameExists == 1 { 
 		return c.Status(fiber.StatusConflict).JSON(fiber.Map{
 			"error": true,
 			"msg":   "Username already exists",
@@ -74,7 +74,7 @@ func UserSignUp(c *fiber.Ctx) error {
 
 	key := fmt.Sprintf("user:%s", user.ID.String())
 
-	// Set the User data (you have previously checked for existing usernames)
+
 	err = redisClient.Set(context.Background(), key, jsonUser, 0).Err()
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
@@ -83,10 +83,10 @@ func UserSignUp(c *fiber.Ctx) error {
 		})
 	}
 	
-	// Store a mapping of username to userID (no need for SetNX since the check is done)
+
 	err = redisClient.Set(context.Background(), fmt.Sprintf("username:%s", siginUp.Username), user.ID.String(), 0).Err()
 	if err != nil {
-		// Handle potential errors in setting the username mapping
+		
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"error": true,
 			"msg":   "Error storing username mapping", 
@@ -104,7 +104,7 @@ func UserSignUp(c *fiber.Ctx) error {
 
 
 func UserSignIn(c *fiber.Ctx) error {
-    signIn := models.SignIn{} // Assuming this struct only has a username field
+    signIn := models.SignIn{} 
     redisClient := db.GetRedisClient()
 
     if err := c.BodyParser(&signIn); err != nil {
@@ -114,23 +114,23 @@ func UserSignIn(c *fiber.Ctx) error {
         })
     }
 
-    // 1. Check if the username exists in Redis
+
     userID, err := redisClient.Get(context.Background(), fmt.Sprintf("username:%s", signIn.Username)).Result()
     if err == redis.Nil {
-        // Username not found
+  
         return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
             "error": true,
             "msg":   "Username does not Exist", 
         })
     } else if err != nil {
-        // Redis error
+r
         return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
             "error": true,
             "msg":   "Redis error",
         })
     }
 
-    // 2. Retrieve user data from Redis 
+
     key := fmt.Sprintf("user:%s", userID)
     userJSON, err := redisClient.Get(context.Background(), key).Result()
     if err != nil {
@@ -140,7 +140,6 @@ func UserSignIn(c *fiber.Ctx) error {
         })
     }
 
-    // 3. Unmarshal the user data (deserialize)
     var user models.User
     err = json.Unmarshal([]byte(userJSON), &user)
     if err != nil {
@@ -150,7 +149,7 @@ func UserSignIn(c *fiber.Ctx) error {
         })
     }
 
-    // 4. Generate JWT token on successful login
+
     token, exp, err := createJWTToken(user)
     if err != nil {
         return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
@@ -163,7 +162,7 @@ func UserSignIn(c *fiber.Ctx) error {
         "token": token,
         "exp":   exp,
         "msg":   "Login successful",
-        "user":  userJSON, // Send back the user data (optional)
+        "user":  userJSON,
     })
 }
 

@@ -11,7 +11,7 @@ import (
 )
 
 func UpdateGameResults(c *fiber.Ctx) error {
-	// 1. Extract Data & Validate
+
 	fmt.Println("hi")
 	updateData := models.UpdateData{}
 	if err := c.BodyParser(&updateData); err != nil {
@@ -21,7 +21,6 @@ func UpdateGameResults(c *fiber.Ctx) error {
 		})
 	}
 
-	// 2. Fetch User from Redis
 	key := fmt.Sprintf("user:%s", updateData.ID)
 	redisClient := db.GetRedisClient() // Assuming you have this set up
 	userJSON, err := redisClient.Get(context.Background(), key).Result()
@@ -37,7 +36,7 @@ func UpdateGameResults(c *fiber.Ctx) error {
 		})
 	}
 
-	// 3. Modify the User Data
+
 	user := &models.User{}
 	err = json.Unmarshal([]byte(userJSON), &user)
 	if err != nil {
@@ -53,7 +52,7 @@ func UpdateGameResults(c *fiber.Ctx) error {
 		user.TotalGamesLost += 1
 	}
 
-	// 4. Store Back in Redis
+
 	newJSONUser, err := json.Marshal(user)
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
@@ -78,7 +77,7 @@ func UpdateGameResults(c *fiber.Ctx) error {
 func GetGameResult(c *fiber.Ctx) error {
 	fmt.Println("hello")
 
-	// Retrieve the ID from query parameters
+
 	userID := c.Query("id")
 	fmt.Println(userID, "hee")
 	if userID == "" {
@@ -92,7 +91,6 @@ func GetGameResult(c *fiber.Ctx) error {
 	redisClient := db.GetRedisClient()
 
 	userJSON, err := redisClient.Get(context.Background(), key).Result()
-	// ... (rest of your error handling and response logic remains the same) ...
 
 	if err == redis.Nil {
 		return c.Status(fiber.StatusNotFound).JSON(fiber.Map{
@@ -106,41 +104,9 @@ func GetGameResult(c *fiber.Ctx) error {
 		})
 	}
 
-	// Send the JSON response directly (no need to deserialize with json.Unmarshal)
+
 	return c.JSON(fiber.Map{
 		"user": userJSON,
 	})
 }
 
-// func GetGameResult(c *fiber.Ctx) error {
-
-// 	fmt.Println("hello")
-//      idData := models.IDData{}
-//     if err := c.BodyParser(&idData); err != nil {
-//         return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-//             "error": true,
-//             "msg":   "Invalid request body",
-//         })
-//     }
-
-//     key := fmt.Sprintf("user:%s", idData.ID)
-//     redisClient := db.GetRedisClient() // Assuming you have this
-
-//     userJSON, err := redisClient.Get(context.Background(), key).Result()
-//     if err == redis.Nil {
-//         return c.Status(fiber.StatusNotFound).JSON(fiber.Map{
-//             "error": true,
-//             "msg":   "User not found",
-//         })
-//     } else if err != nil {
-//         return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-//             "error": true,
-//             "msg":   "Redis error",
-//         })
-//     }
-
-//     // Send the JSON response directly (no need to deserialize with json.Unmarshal)
-//     return c.JSON(fiber.Map{
-//         "user": userJSON,
-//     })
-// }
