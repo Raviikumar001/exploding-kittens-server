@@ -31,15 +31,7 @@ func main() {
 
 	routes.AuthRoutes(app)
 	routes.GameRoutes(app)
-	// app.Get("/private", func(c *fiber.Ctx) error {
-	// 	return c.JSON(fiber.Map{"success": true, "path": "private"})
 
-	// })
-
-	// app.Get("/public", func(c *fiber.Ctx) error {
-	// 	return c.JSON(fiber.Map{"success": true, "path": "public"})
-
-	// })
 	port := os.Getenv("PORT")
 	app.Get("/", func(c *fiber.Ctx) error {
 

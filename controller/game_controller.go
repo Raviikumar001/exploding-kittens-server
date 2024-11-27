@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+
 	"github.com/Raviikumar001/exploding-kittens-server/db"
 	"github.com/Raviikumar001/exploding-kittens-server/models"
 	"github.com/gofiber/fiber/v2"
@@ -22,7 +23,7 @@ func UpdateGameResults(c *fiber.Ctx) error {
 	}
 
 	key := fmt.Sprintf("user:%s", updateData.ID)
-	redisClient := db.GetRedisClient() // Assuming you have this set up
+	redisClient := db.GetRedisClient()
 	userJSON, err := redisClient.Get(context.Background(), key).Result()
 	if err == redis.Nil {
 		return c.Status(fiber.StatusNotFound).JSON(fiber.Map{
@@ -35,7 +36,6 @@ func UpdateGameResults(c *fiber.Ctx) error {
 			"msg":   "Redis error",
 		})
 	}
-
 
 	user := &models.User{}
 	err = json.Unmarshal([]byte(userJSON), &user)
@@ -51,7 +51,6 @@ func UpdateGameResults(c *fiber.Ctx) error {
 	} else {
 		user.TotalGamesLost += 1
 	}
-
 
 	newJSONUser, err := json.Marshal(user)
 	if err != nil {
@@ -76,7 +75,6 @@ func UpdateGameResults(c *fiber.Ctx) error {
 
 func GetGameResult(c *fiber.Ctx) error {
 	fmt.Println("hello")
-
 
 	userID := c.Query("id")
 	fmt.Println(userID, "hee")
@@ -104,9 +102,7 @@ func GetGameResult(c *fiber.Ctx) error {
 		})
 	}
 
-
 	return c.JSON(fiber.Map{
 		"user": userJSON,
 	})
 }
-
