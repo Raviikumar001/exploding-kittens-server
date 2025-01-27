@@ -13,7 +13,7 @@ var redisClient *redis.Client
 var ctx = context.Background()
 
 func StartRedis() {
-	redisURL := os.Getenv("REDIS_URL")
+	redisURL := os.Getenv("REDIS_DB_URL")
 	if redisURL == "" {
 		log.Fatal("REDIS_URL environment variable is not set")
 	}
