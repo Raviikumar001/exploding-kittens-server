@@ -14,7 +14,7 @@ import (
 var redisClient *redis.Client
 
 func StartRedis() {
-	// Prefer REDIS_URL; fallback to individual host/port/password/db vars
+	// Prefer REDIS_URL (used by Railway and other cloud providers)
 	if url := os.Getenv("REDIS_URL"); url != "" {
 		opt, err := redis.ParseURL(url)
 		if err != nil {
@@ -24,7 +24,8 @@ func StartRedis() {
 		return
 	}
 
-	host := getenv("REDIS_HOST", "redis")
+	// Fallback to individual Redis settings (for local development)
+	host := getenv("REDIS_HOST", "localhost")
 	port := getenv("REDIS_PORT", "6379")
 	password := os.Getenv("REDIS_PASSWORD")
 	dbStr := getenv("REDIS_DB", "0")
@@ -42,13 +43,16 @@ func StartRedis() {
 }
 
 func initClient(opt *redis.Options) {
+	log.Printf("Attempting to connect to Redis at: %s", opt.Addr)
 	redisClient = redis.NewClient(opt)
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
+
 	if ping, err := redisClient.Ping(ctx).Result(); err != nil {
-		log.Fatalf("Failed to connect to Redis at %s: %v", opt.Addr, err)
+		log.Printf("Redis connection failed at %s: %v", opt.Addr, err)
+		log.Fatalf("Failed to connect to Redis. Check REDIS_URL or Redis service configuration.")
 	} else {
-		fmt.Println("Redis connection established:", ping)
+		log.Printf("Redis connection established: %s", ping)
 	}
 }
 

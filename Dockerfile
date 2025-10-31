@@ -23,11 +23,12 @@ WORKDIR /app
 COPY --from=builder /app/exploding-kittens-server /app/server
 COPY --from=builder /app/app.env /app/app.env
 
-# Expose default port (configurable with PORT)
+# Railway assigns PORT dynamically, but expose common port for local dev
 EXPOSE 8080
 
 USER nonroot:nonroot
 
+# Railway will override PORT, this is just a fallback
 ENV PORT=8080
 
 ENTRYPOINT ["/app/server"]
