@@ -1,0 +1,36 @@
+version: "3.9"
+
+services:
+  redis:
+    image: redis:7-alpine
+    container_name: ek-redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-data:/data
+    command: ["redis-server", "--appendonly", "yes"]
+
+  api:
+    build:
+      context: ./exploding-kittens-server
+      dockerfile: Dockerfile
+    container_name: ek-api
+    depends_on:
+      - redis
+    environment:
+      - PORT=8080
+      - JWT_SECRET=super-secret-change-me
+      # Prefer discrete Redis settings for local compose
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - REDIS_DB=0
+      # - REDIS_PASSWORD=
+      # Alternatively, use REDIS_URL like: redis://:password@redis:6379/0
+      # - REDIS_URL=redis://redis:6379/0
+    ports:
+      - "8080:8080"
+    restart: unless-stopped
+
+volumes:
+  redis-data:
