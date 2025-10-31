@@ -43,17 +43,51 @@ func StartRedis() {
 }
 
 func initClient(opt *redis.Options) {
-	log.Printf("Attempting to connect to Redis at: %s", opt.Addr)
 	redisClient = redis.NewClient(opt)
-	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
-	defer cancel()
 
-	if ping, err := redisClient.Ping(ctx).Result(); err != nil {
-		log.Printf("Redis connection failed at %s: %v", opt.Addr, err)
-		log.Fatalf("Failed to connect to Redis. Check REDIS_URL or Redis service configuration.")
-	} else {
-		log.Printf("Redis connection established: %s", ping)
+	// Retry settings (tunable via env)
+	maxAttempts := 15 // ~60-70s total with backoff
+	if v := os.Getenv("REDIS_MAX_ATTEMPTS"); v != "" {
+		if n, err := strconv.Atoi(v); err == nil && n > 0 {
+			maxAttempts = n
+		}
 	}
+
+	baseDelay := 1 * time.Second
+	if v := os.Getenv("REDIS_RETRY_BASE_MS"); v != "" {
+		if ms, err := strconv.Atoi(v); err == nil && ms > 0 {
+			baseDelay = time.Duration(ms) * time.Millisecond
+		}
+	}
+
+	var lastErr error
+	for attempt := 1; attempt <= maxAttempts; attempt++ {
+		log.Printf("Attempting to connect to Redis at: %s (attempt %d/%d)", opt.Addr, attempt, maxAttempts)
+		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+		if ping, err := redisClient.Ping(ctx).Result(); err == nil {
+			cancel()
+			log.Printf("Redis connection established: %s", ping)
+			return
+		} else {
+			lastErr = err
+			cancel()
+			// Exponential backoff with jitter
+			sleep := baseDelay * time.Duration(1<<uint(min(attempt-1, 5)))
+			if sleep > 8*time.Second {
+				sleep = 8 * time.Second
+			}
+			time.Sleep(sleep)
+		}
+	}
+	log.Printf("Redis connection failed at %s: %v", opt.Addr, lastErr)
+	log.Fatalf("Failed to connect to Redis after retries. Ensure REDIS_URL is set (Railway) or Redis is reachable.")
+}
+
+func min(a, b int) int {
+	if a < b {
+		return a
+	}
+	return b
 }
 
 func GetRedisClient() *redis.Client {
