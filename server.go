@@ -2,8 +2,11 @@ package main
 
 import (
 	"fmt"
+	"log"
 	"os"
-	// "os"
+	"os/signal"
+	"syscall"
+
 	"github.com/Raviikumar001/exploding-kittens-server/db"
 	"github.com/Raviikumar001/exploding-kittens-server/routes"
 
@@ -33,13 +36,25 @@ func main() {
 	routes.GameRoutes(app)
 
 	port := os.Getenv("PORT")
+	if port == "" {
+		port = "8080"
+	}
 	app.Get("/", func(c *fiber.Ctx) error {
 
 		return c.JSON(fiber.Map{"message": "hello kitten"})
 	})
 
-	if err := app.Listen("0.0.0.0:" + port); err != nil {
-		panic(err)
-	}
+	// Graceful shutdown support
+	go func() {
+		if err := app.Listen("0.0.0.0:" + port); err != nil {
+			log.Printf("Fiber server stopped: %v", err)
+		}
+	}()
+
+	quit := make(chan os.Signal, 1)
+	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
+	<-quit
+	fmt.Println("Shutting down server...")
+	_ = app.Shutdown()
 
 }
