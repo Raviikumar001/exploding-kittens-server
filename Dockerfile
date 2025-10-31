@@ -1,10 +1,11 @@
 # Multi-stage Dockerfile for Go Fiber server
-FROM golang:1.22 as builder
+FROM golang:1.22 AS builder
 
 WORKDIR /app
 
 # Dependencies layer
-COPY go.mod go.sum ./
+COPY go.mod ./
+COPY go.sum* ./
 RUN go mod download
 
 # Source
@@ -18,9 +19,8 @@ FROM gcr.io/distroless/base-debian12
 
 WORKDIR /app
 
-# Copy binary and app.env (optional; can be overridden by runtime env)
+# Copy binary and environment file
 COPY --from=builder /app/exploding-kittens-server /app/server
-COPY --from=builder /app/app.env /app/.env
 COPY --from=builder /app/app.env /app/app.env
 
 # Expose default port (configurable with PORT)
